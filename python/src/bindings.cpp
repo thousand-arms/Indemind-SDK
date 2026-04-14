@@ -35,6 +35,16 @@ namespace {
 constexpr float kG = 9.81f;
 constexpr float kDeg2Rad = static_cast<float>(M_PI / 180.0);
 
+// ModuleInfo char[32] fields occasionally contain non-UTF-8 bytes (GBK
+// artifacts, zero-padding, junk). Decode with errors='replace' so we
+// never raise UnicodeDecodeError on get_module_params().
+py::str safe_str(const char* s, std::size_t maxlen) {
+    std::size_t n = strnlen(s, maxlen);
+    PyObject* obj = PyUnicode_DecodeUTF8(s, static_cast<Py_ssize_t>(n), "replace");
+    if (!obj) throw py::error_already_set();
+    return py::reinterpret_steal<py::str>(obj);
+}
+
 struct RawFrame {
     double timestamp{0.0};
     int width{0};
@@ -185,14 +195,14 @@ public:
         d["imu"] = imu;
 
         py::dict device;
-        device["id"] = std::string(dev._id);
-        device["designer"] = std::string(dev._designer);
-        device["firmware_version"] = std::string(dev._fireware_version);
-        device["hardware_version"] = std::string(dev._hardware_version);
-        device["lens"] = std::string(dev._lens);
-        device["imu_chip"] = std::string(dev._imu);
-        device["viewing_angle"] = std::string(dev._viewing_angle);
-        device["baseline_str"] = std::string(dev._baseline);
+        device["id"] = safe_str(dev._id, sizeof(dev._id));
+        device["designer"] = safe_str(dev._designer, sizeof(dev._designer));
+        device["firmware_version"] = safe_str(dev._fireware_version, sizeof(dev._fireware_version));
+        device["hardware_version"] = safe_str(dev._hardware_version, sizeof(dev._hardware_version));
+        device["lens"] = safe_str(dev._lens, sizeof(dev._lens));
+        device["imu_chip"] = safe_str(dev._imu, sizeof(dev._imu));
+        device["viewing_angle"] = safe_str(dev._viewing_angle, sizeof(dev._viewing_angle));
+        device["baseline_str"] = safe_str(dev._baseline, sizeof(dev._baseline));
         d["device"] = device;
 
         d["baseline_m"] = p._baseline;
@@ -206,14 +216,14 @@ public:
         }
         indem::ModuleInfo info = sdk_->GetModuleInfo();
         py::dict d;
-        d["id"] = std::string(info._id);
-        d["designer"] = std::string(info._designer);
-        d["firmware_version"] = std::string(info._fireware_version);
-        d["hardware_version"] = std::string(info._hardware_version);
-        d["lens"] = std::string(info._lens);
-        d["imu_chip"] = std::string(info._imu);
-        d["viewing_angle"] = std::string(info._viewing_angle);
-        d["baseline_str"] = std::string(info._baseline);
+        d["id"] = safe_str(info._id, sizeof(info._id));
+        d["designer"] = safe_str(info._designer, sizeof(info._designer));
+        d["firmware_version"] = safe_str(info._fireware_version, sizeof(info._fireware_version));
+        d["hardware_version"] = safe_str(info._hardware_version, sizeof(info._hardware_version));
+        d["lens"] = safe_str(info._lens, sizeof(info._lens));
+        d["imu_chip"] = safe_str(info._imu, sizeof(info._imu));
+        d["viewing_angle"] = safe_str(info._viewing_angle, sizeof(info._viewing_angle));
+        d["baseline_str"] = safe_str(info._baseline, sizeof(info._baseline));
         return d;
     }
 
