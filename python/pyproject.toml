@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61", "wheel", "pybind11>=2.9"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyindemind"
+version = "0.1.0"
+description = "Python bindings for the INDEMIND IMSEE-SDK (stereo + IMU)"
+requires-python = ">=3.8"
+dependencies = ["numpy"]
+
+[tool.setuptools]
+packages = ["pyindemind"]
+
+[tool.setuptools.package-data]
+pyindemind = ["opencv_compat/*.so*"]
